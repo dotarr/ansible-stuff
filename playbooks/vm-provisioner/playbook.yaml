@@ -1,0 +1,23 @@
+- name: Ubuntu Provisioner
+  hosts: proxmox
+  become: true
+  gather_facts: false
+  roles:
+      - role: mirceanton.proxmox_cloudbuntu
+        vars:
+          proxmox_cloudbuntu_vmid: 9001
+          proxmox_cloudbuntu_name: cloudbuntu-test
+          proxmox_cloudbuntu_disk_device: local
+          proxmox_cloudbuntu_ci_user: srvadmin
+          proxmox_cloudbuntu_ci_pass: test123
+          proxmox_cloudbuntu_machine_type: q35
+          proxmox_clodubuntu_bios_type: ovmf
+          proxmox_cloudbuntu_cpu_type: kvm64
+          proxmox_cloudbuntu_disk_size: 16G
+        proxmox_cloudbuntu_cpu_cores: 4
+        proxmox_cloudbuntu_ram: 4096
+      - role: ../../roles/clone_vm
+        vars:
+          vm_name: ubuntu2
+          template_to_clone: cloudbuntu-test
+
