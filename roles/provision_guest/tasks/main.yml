@@ -1,0 +1,106 @@
+---
+
+- name: Download kernel update script
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/pimlie/ubuntu-mainline-kernel.sh/master/ubuntu-mainline-kernel.sh
+    dest: /home/srvadmin/ubuntu-mainline-kernel.sh 
+    mode: a+x
+
+- name: Update kernel
+  command: "bash /home/srvadmin/ubuntu-mainline-kernel.sh --yes -i {{ kernel_upgrade_version }}"
+  notify: Reboot
+
+- name: Copy modprobe config
+  template:
+    src: ../templates/i915.j2
+    dest: /etc/modprobe.d/i915.conf
+  notify: Update initramfs
+
+- name: Install prerequisites
+  apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - nfs-common
+      - git
+      - linux-firmware
+      - qemu-guest-agent
+    state: latest
+    update_cache: true
+
+- name: Enable qemu guest agent service
+  ansible.builtin.systemd:
+    name: qemu-guest-agent
+    state: started
+    enabled: true
+
+- name: Add Docker GPG apt Key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu jammy stable
+    state: present
+
+- name: Update apt and install docker-ce
+  apt:
+    name: docker-ce
+    state: latest
+    update_cache: true
+
+- name: Adding user to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
+
+- name: Stat mountpoint
+  stat:
+    path: "{{ nfs_mountpoint }}"
+  register: mp_stat
+
+- name: Create mountpoint
+  ansible.builtin.file:
+    path: "{{ nfs_mountpoint }}"
+    state: directory
+    mode: 0666
+    owner: root
+    group: users
+  when: not mp_stat.stat.exists
+
+- name: mount network share
+  ansible.posix.mount:
+    src: "{{ nfs_location }}"
+    path: "{{ nfs_mountpoint }}"
+    fstype: nfs
+    opts: "rw,auto,hard,intr,rsize=8192,wsize=8192,timeo=14"
+    state: mounted
+
+- name: Generate SSH key 
+  openssh_keypair:
+    path: "~/.ssh/id_ed25519"
+    type: ed25519
+    state: present
+  become: False
+
+- name: Check SSH public key   
+  command: /bin/cat /home/{{ ansible_user }}/.ssh/id_ed25519.pub
+  register: cat
+  changed_when: False
+
+- name: Print SSH public key
+  debug: var=cat.stdout
+
+- name: Wait for user to copy SSH public key   
+  pause: prompt="Please add the SSH public key above to your GitHub account"
+
+- name: Checkout services repo
+  become: False
+  git:
+    repo: "{{ services_repo }}"
+    dest: "/home/{{ ansible_user }}/docker-stuff"
+    accept_newhostkey: true

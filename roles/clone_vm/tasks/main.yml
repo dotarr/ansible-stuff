@@ -8,4 +8,4 @@
   ansible.builtin.command: "qm clone {{ template_id }} {{ vmid.stdout }} --name {{ vm_name }} --full true"
 
 - name: Passthrough GPU
-  ansible.builtin.command: "qm set {{ vmid.stdout}} -hostpci0 0000:00:02,pcie=on,x-vga=on"
+  ansible.builtin.command: "qm set {{ vmid.stdout}} -hostpci0 0000:00:02,pcie=on"

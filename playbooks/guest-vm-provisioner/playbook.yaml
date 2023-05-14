@@ -1,0 +1,5 @@
+- name: Ubuntu Provisioner
+  hosts: ubuntu-guest
+  become: true
+  roles:
+    - role: ../../roles/provision_guest

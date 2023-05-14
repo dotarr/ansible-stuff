@@ -1,0 +1,7 @@
+---
+- name: Update initramfs
+  command: update-initramfs -u -k all
+  notify: Reboot
+
+- name: Reboot
+  ansible.builtin.reboot:
