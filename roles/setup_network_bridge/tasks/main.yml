@@ -1,0 +1,5 @@
+---
+    - name: Configure /etc/network/interfaces
+      template:
+        src: ../interfaces/networking.j2
+        dest: /etc/network/interfaces

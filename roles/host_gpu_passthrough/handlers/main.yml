@@ -1,0 +1,8 @@
+---
+- name: update-grub
+  shell: /usr/sbin/update-grub
+
+- name: add modules
+  community.general.modprobe:
+    name: 8021q
+    state: present

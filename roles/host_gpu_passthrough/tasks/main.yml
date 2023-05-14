@@ -1,0 +1,27 @@
+---
+- name: update grub
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT="((:?(?!{{ item }}=on).)*?)"$'
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="\1 {{ item }}"'
+    backup: true
+    backrefs: true
+  notify: update-grub
+  with_list:
+    - intel_iommu=on
+    - iommu=pt
+    # needed? - nmi_watchdog=0
+
+- name: load kernel modules
+  community.general.modprobe:
+    name: "{{ item }}"
+  with_list: 
+    - vfio
+	  - vfio_iommu_type1
+	  - vfio_pci
+	  - vfio_virqfd
+
+- name: update pve kernel
+  package:
+    name: pve-kernel-6.1
+    state: present

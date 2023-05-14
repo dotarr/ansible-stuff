@@ -1,13 +1,11 @@
 ---
-- name: Clone VM with source vmid and target newid and raw format
-  community.general.proxmox_kvm:
-    api_user: "{{ proxmox_api_user }}"
-    api_token_id: "{{ proxmox_api_token_id }}"
-    api_token_secret: "{{ proxmox_api_secret }}"
-    api_host: "{{ proxmox_api_host }}"
-    node: "{{ proxmox_node }}"
-    clone: "{{ template_to_clone }}"
-    name: "{{ vm_name }}"
-    storage: "{{ proxmox_vm_storage }}"
-    format: qcow2
-    timeout: 300
+- name: Get next free VM ID
+  ansible.builtin.command: pvesh get /cluster/nextid
+  register: vmid
+  changed_when: false
+
+- name: Clone VM
+  ansible.builtin.command: "qm clone {{ template_id }} {{ vmid.stdout }} --name {{ vm_name }} --full true"
+
+- name: Passthrough GPU
+  ansible.builtin.command: "qm set {{ vmid.stdout}} -hostpci0 0000:00:02,pcie=on,x-vga=on"
