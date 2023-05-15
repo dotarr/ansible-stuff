@@ -5,8 +5,8 @@
   roles:
     - role: mirceanton.proxmox_cloudbuntu
       vars:
-        proxmox_cloudbuntu_vmid: 9001
-        proxmox_cloudbuntu_name: cloudbuntu-test
+        proxmox_cloudbuntu_vmid: 9002
+        proxmox_cloudbuntu_name: cloud-deb-test
         proxmox_cloudbuntu_disk_device: local
         proxmox_cloudbuntu_ci_user: srvadmin
         proxmox_cloudbuntu_ci_pass: test123
@@ -16,9 +16,12 @@
         proxmox_cloudbuntu_disk_size: 16G
         proxmox_cloudbuntu_ci_keys: 
           - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEujzMowq4O3lrszqdfjmhjOJzDecHq81KsVBeNEvNKa simon.rowsby@gmail.com
+        proxmox_cloudbuntu_image_link: https://cloud.debian.org/images/cloud/bookworm/daily/latest/debian-12-generic-amd64-daily.qcow2
+        proxmox_cloudbuntu_image_dest: /var/lib/vz/template/iso/debian-12-generic-amd64-daily.qcow2
+
       proxmox_cloudbuntu_cpu_cores: 4
       proxmox_cloudbuntu_ram: 4096
     - role: ../../roles/clone_vm
       vars:
-        vm_name: ubuntu2
-        template_id: 9001
+        vm_name: vmdeb-test
+        template_id: 9002

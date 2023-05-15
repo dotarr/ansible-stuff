@@ -1,20 +1,30 @@
 ---
 
-- name: Download kernel update script
-  ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/pimlie/ubuntu-mainline-kernel.sh/master/ubuntu-mainline-kernel.sh
-    dest: /home/srvadmin/ubuntu-mainline-kernel.sh 
-    mode: a+x
+- name: Create directory for ansible facts
+  ansible.builtin.file:
+    state: directory
+    recurse: true
+    path: /etc/ansible/facts.d
 
-- name: Update kernel
-  command: "bash /home/srvadmin/ubuntu-mainline-kernel.sh --yes -i {{ kernel_upgrade_version }}"
-  notify: Reboot
+- name: Copy fact template
+  template:
+    src: ../templates/firmware.j2
+    dest: /etc/ansible/facts.d/firmware.fact
+    force: False
+
+- name: Re-read facts after adding custom fact
+  ansible.builtin.setup:
+    filter: ansible_local
 
 - name: Copy modprobe config
   template:
     src: ../templates/i915.j2
     dest: /etc/modprobe.d/i915.conf
   notify: Update initramfs
+
+- name: load ip6_table module
+  community.general.modprobe:
+    name: ip6_tables
 
 - name: Install prerequisites
   apt:
@@ -25,10 +35,37 @@
       - software-properties-common
       - nfs-common
       - git
-      - linux-firmware
       - qemu-guest-agent
     state: latest
     update_cache: true
+
+- name: Add i915 firmware 
+  block:
+    - name: Download & extract firmware tarball
+      ansible.builtin.unarchive:
+        src: "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/{{ firmware_version }}.tar.gz"
+        dest: "/home/{{ ansible_user }}"
+        remote_src: yes
+    - name: Copy i915 firmware
+      ansible.builtin.copy:
+          src: "/home/{{ ansible_user }}/{{ firmware_version }}/i915"
+          dest: "/lib/firmware"
+          owner: root
+          group: root
+          remote_src: yes
+      notify: Update initramfs
+    - name: Update firmware facts
+      community.general.ini_file:
+        path: /etc/ansible/facts.d/firmware.fact
+        section: info
+        option: version
+        value: "{{ firmware_version }}"
+  always:
+    - name: Cleanup 
+      ansible.builtin.file:
+        path: "/home/{{ ansible_user }}/{{ firmware_version }}"
+        state: absent
+  when: ansible_local['firmware']['info']['version'] != firmware_version
 
 - name: Enable qemu guest agent service
   ansible.builtin.systemd:
@@ -38,12 +75,12 @@
 
 - name: Add Docker GPG apt Key
   apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
+    url: https://download.docker.com/linux/debian/gpg
     state: present
 
 - name: Add Docker Repository
   apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu jammy stable
+    repo: deb https://download.docker.com/linux/debian bookworm stable
     state: present
 
 - name: Update apt and install docker-ce
