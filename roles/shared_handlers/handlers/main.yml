@@ -1,4 +1,8 @@
 ---
+
+- name: Update grub
+  shell: /usr/sbin/update-grub
+
 - name: Update initramfs
   command: update-initramfs -u -k all
   notify: Reboot

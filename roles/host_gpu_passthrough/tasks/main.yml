@@ -6,7 +6,7 @@
     line: 'GRUB_CMDLINE_LINUX_DEFAULT="\1 {{ item }}"'
     backup: true
     backrefs: true
-  notify: update-grub
+  notify: Update grub
   with_list:
     - intel_iommu=on
     - iommu=pt
@@ -17,11 +17,13 @@
     name: "{{ item }}"
   with_list: 
     - vfio
-	  - vfio_iommu_type1
-	  - vfio_pci
-	  - vfio_virqfd
+    - vfio_iommu_type1
+    - vfio_pci
+    - vfio_virqfd
+  notify: Reboot
 
 - name: update pve kernel
   package:
     name: pve-kernel-6.1
     state: present
+  notify: Reboot

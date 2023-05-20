@@ -15,7 +15,7 @@
         proxmox_cloudbuntu_cpu_type: kvm64
         proxmox_cloudbuntu_disk_size: 16G
         proxmox_cloudbuntu_ci_keys: 
-          - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEujzMowq4O3lrszqdfjmhjOJzDecHq81KsVBeNEvNKa simon.rowsby@gmail.com
+          - "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
         proxmox_cloudbuntu_image_link: https://cloud.debian.org/images/cloud/bookworm/daily/latest/debian-12-generic-amd64-daily.qcow2
         proxmox_cloudbuntu_image_dest: /var/lib/vz/template/iso/debian-12-generic-amd64-daily.qcow2
 

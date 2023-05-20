@@ -3,3 +3,4 @@
   template:
     src: ../templates/networking.j2
     dest: /etc/network/interfaces
+  notify: Reboot
