@@ -4,3 +4,4 @@ custom
 .cache
 *.pyc
 *.log
+luks-keys/

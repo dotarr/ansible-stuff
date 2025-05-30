@@ -15,17 +15,17 @@ source /etc/network/interfaces.d/*
 auto lo
 iface lo inet loopback
 
-auto enp3s0
-iface enp3s0 inet dhcp
-
-iface enp4s0 inet manual
+auto enp4s0
+iface en43s0 inet dhcp
 
 iface enp5s0 inet manual
 
 iface enp6s0 inet manual
 
+iface enp7s0 inet manual
+
 auto vmbr0
 iface vmbr0 inet dhcp 
-	bridge-ports enp3s0
+	bridge-ports enp4s0
 	bridge-stp off
 	bridge-fd 0

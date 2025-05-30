@@ -9,3 +9,8 @@
 
 - name: Passthrough GPU
   ansible.builtin.command: "qm set {{ vmid.stdout}} -hostpci0 0000:00:02,pcie=on"
+  when: passthrough_gpu
+
+- name: Passthrough SSD
+  ansible.builtin.command: "qm set {{ vmid.stdout }} -scsi2 /dev/disk/by-id/{{ passthrough_ssd_id }}"
+  when: passthrough_ssd_id is defined

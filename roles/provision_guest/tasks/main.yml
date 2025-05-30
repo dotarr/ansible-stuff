@@ -25,6 +25,7 @@
 - name: load ip6_table module
   community.general.modprobe:
     name: ip6_tables
+    persistent: present
 
 - name: Install prerequisites
   apt:
@@ -36,6 +37,7 @@
       - nfs-common
       - git
       - qemu-guest-agent
+      - rsync
     state: latest
     update_cache: true
 
@@ -109,7 +111,7 @@
     group: users
   when: not mp_stat.stat.exists
 
-- name: mount network share
+- name: Mount network share
   ansible.posix.mount:
     src: "{{ nfs_location }}"
     path: "{{ nfs_mountpoint }}"

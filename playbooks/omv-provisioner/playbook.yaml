@@ -1,0 +1,10 @@
+- name: Omv Provisioner
+  hosts: omv
+  become: true
+  roles:
+    - role: ../../roles/crypttab
+      vars: 
+        luks_key: ../../luks-keys/8tbnas
+        luks_device_id: 8cfffab0-e0b9-48a4-a16c-be31ff6f95ef
+        cryptsetup_pkg_name: cryptsetup
+        mount: false

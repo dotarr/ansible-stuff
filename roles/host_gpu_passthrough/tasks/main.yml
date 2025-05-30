@@ -15,6 +15,7 @@
 - name: load kernel modules
   community.general.modprobe:
     name: "{{ item }}"
+    persistent: present
   with_list: 
     - vfio
     - vfio_iommu_type1

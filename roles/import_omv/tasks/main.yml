@@ -1,0 +1,11 @@
+---
+
+- name: Copy Omv backup
+  ansible.builtin.copy:
+    src: "{{ omv_backup_file }}"
+    dest: "/var/lib/vz/dump/{{ omv_backup_file | basename }}"
+    owner: root
+    mode: '0644'
+
+- name: Import OMV backup
+  ansible.builtin.command: "qmrestore /var/lib/vz/dump/{{ omv_backup_file | basename }} {{ omv_template_id }}"

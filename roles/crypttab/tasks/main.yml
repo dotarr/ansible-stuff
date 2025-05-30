@@ -1,0 +1,48 @@
+---
+
+- name: Install Crypttab
+  apt:
+    pkg:
+      - "{{ cryptsetup_pkg_name }}"
+    state: latest
+    update_cache: true
+
+- name: Copy keyfile
+  ansible.builtin.copy:
+    src: "{{ luks_key }}"
+    dest: "/etc/{{ luks_key | basename }}"
+    owner: root
+    mode: '0644'
+
+- name: Add to Crypttab
+  community.general.crypttab:
+    backing_device: "UUID={{ luks_device_id }}"
+    name: "{{ luks_key | basename }}"
+    state: present
+    opts: luks
+    password: "/etc/{{ luks_key | basename }}"
+
+- name: Mount
+  block: 
+    - name: Stat mountpoint
+      stat:
+        path: "{{ mountpoint }}"
+      register: mp_stat
+
+    - name: Create mountpoint
+      ansible.builtin.file:
+        path: "{{ mountpoint }}"
+        state: directory
+        mode: 0666
+        owner: root
+        group: users
+      when: not mp_stat.stat.exists
+
+    - name: Mount luks
+      ansible.posix.mount:
+        src: "/dev/mapper/{{ luks_key | basename }}"
+        path: "{{ mountpoint }}"
+        opts: "defaults,nofail"
+        fstype: ext4
+        state: mounted
+  when: mount

@@ -5,10 +5,10 @@
   roles:
     - role: mirceanton.proxmox_cloudbuntu
       vars:
-        proxmox_cloudbuntu_vmid: 9002
-        proxmox_cloudbuntu_name: cloud-deb-test
+        proxmox_cloudbuntu_vmid: 9001
+        proxmox_cloudbuntu_name: cloud-deb
         proxmox_cloudbuntu_disk_device: local
-        proxmox_cloudbuntu_ci_user: srvadmin
+        proxmox_cloudbuntu_ci_user: simon
         proxmox_cloudbuntu_ci_pass: test123
         proxmox_cloudbuntu_machine_type: q35
         proxmox_clodubuntu_bios_type: ovmf
@@ -23,5 +23,18 @@
       proxmox_cloudbuntu_ram: 4096
     - role: ../../roles/clone_vm
       vars:
-        vm_name: vmdeb-test
-        template_id: 9002
+        vm_name: vmdeb3
+        template_id: 9001
+        passthrough_gpu: true
+        passthrough_ssd_id: nvme-WDC_WDS480G2G0C-00AJM0_223764448712
+
+    # - role: ../../roles/import_omv
+    #   vars:
+    #     omv_backup_file: ../../vm-template-backups/vzdump-qemu-101-2023_05_20-14_56_21.vma.zst
+    #     omv_template_id: 9005
+    # - role: ../../roles/clone_vm
+    #   vars:
+    #     vm_name: omv
+    #     template_id: 9005
+    #     passthrough_gpu: false
+    #     passthrough_ssd_id: ata-WDC_WD80EDAZ-11TA3A0_VDKJJL9K
