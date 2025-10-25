@@ -8,3 +8,9 @@
         luks_device_id: 8cfffab0-e0b9-48a4-a16c-be31ff6f95ef
         cryptsetup_pkg_name: cryptsetup
         mount: false
+    - role: ../../roles/crypttab
+      vars: 
+        luks_key: ../../luks-keys/barra
+        luks_device_id: dce9dec8-7540-442e-b362-4ceb7d308bec
+        cryptsetup_pkg_name: cryptsetup
+        mount: false
