@@ -8,5 +8,4 @@
         luks_key: ../../luks-keys/scratch
         mountpoint: /scratch
         luks_device_id: 9e9f39a4-216e-4dbe-aae4-d2089c2e017a
-        cryptsetup_pkg_name: cryptsetup
         mount: true

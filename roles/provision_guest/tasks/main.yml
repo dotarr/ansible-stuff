@@ -33,7 +33,6 @@
       - apt-transport-https
       - ca-certificates
       - curl
-      - software-properties-common
       - nfs-common
       - git
       - qemu-guest-agent
@@ -45,7 +44,7 @@
   block:
     - name: Download & extract firmware tarball
       ansible.builtin.unarchive:
-        src: "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/snapshot/{{ firmware_version }}.tar.gz"
+        src: "https://www.kernel.org/pub/linux/kernel/firmware/{{ firmware_version }}.tar.gz"
         dest: "/home/{{ ansible_user }}"
         remote_src: yes
     - name: Copy i915 firmware
@@ -67,7 +66,6 @@
       ansible.builtin.file:
         path: "/home/{{ ansible_user }}/{{ firmware_version }}"
         state: absent
-  when: ansible_local['firmware']['info']['version'] != firmware_version
 
 - name: Enable qemu guest agent service
   ansible.builtin.systemd:
@@ -75,15 +73,15 @@
     state: started
     enabled: true
 
-- name: Add Docker GPG apt Key
-  apt_key:
-    url: https://download.docker.com/linux/debian/gpg
-    state: present
-
-- name: Add Docker Repository
-  apt_repository:
-    repo: deb https://download.docker.com/linux/debian bookworm stable
-    state: present
+- name: Add repo using key from URL
+  deb822_repository:
+    name: docker
+    types: deb
+    uris: https://download.docker.com/linux/debian
+    suites: trixie
+    components: stable
+    architectures: amd64
+    signed_by: https://download.docker.com/linux/debian/gpg
 
 - name: Update apt and install docker-ce
   apt:

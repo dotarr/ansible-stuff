@@ -5,7 +5,7 @@
   roles:
     - role: mirceanton.proxmox_cloudbuntu
       vars:
-        proxmox_cloudbuntu_vmid: 9001
+        proxmox_cloudbuntu_vmid: 9003
         proxmox_cloudbuntu_name: cloud-deb
         proxmox_cloudbuntu_disk_device: local
         proxmox_cloudbuntu_ci_user: simon
@@ -13,18 +13,18 @@
         proxmox_cloudbuntu_machine_type: q35
         proxmox_clodubuntu_bios_type: ovmf
         proxmox_cloudbuntu_cpu_type: kvm64
-        proxmox_cloudbuntu_disk_size: 16G
+        proxmox_cloudbuntu_disk_size: 30G
         proxmox_cloudbuntu_ci_keys: 
           - "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
-        proxmox_cloudbuntu_image_link: https://cloud.debian.org/images/cloud/bookworm/daily/latest/debian-12-generic-amd64-daily.qcow2
-        proxmox_cloudbuntu_image_dest: /var/lib/vz/template/iso/debian-12-generic-amd64-daily.qcow2
+        proxmox_cloudbuntu_image_link: https://cloud.debian.org/images/cloud/trixie/daily/latest/debian-13-generic-amd64-daily.qcow2
+        proxmox_cloudbuntu_image_dest: /var/lib/vz/template/iso/debian-13-generic-amd64-daily.qcow2
 
       proxmox_cloudbuntu_cpu_cores: 4
       proxmox_cloudbuntu_ram: 4096
     - role: ../../roles/clone_vm
       vars:
         vm_name: vmdeb3
-        template_id: 9001
+        template_id: 9003
         passthrough_gpu: true
         passthrough_ssd_id: nvme-WDC_WDS480G2G0C-00AJM0_223764448712
 

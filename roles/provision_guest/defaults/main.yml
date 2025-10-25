@@ -1,6 +1,5 @@
 ---
-kernel_upgrade_version: 6.1.28
 nfs_mountpoint: /mnt/dataonnas
 nfs_location: omv.teleranger.xyz:/data
 services_repo: git@github.com:dotarr/docker-stuff.git
-firmware_version: linux-firmware-20240513
+firmware_version: linux-firmware-20251021

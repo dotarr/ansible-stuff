@@ -3,7 +3,8 @@
 - name: Install Crypttab
   apt:
     pkg:
-      - "{{ cryptsetup_pkg_name }}"
+      - cryptsetup
+      - systemd-cryptsetup
     state: latest
     update_cache: true
 
@@ -21,6 +22,10 @@
     state: present
     opts: luks
     password: "/etc/{{ luks_key | basename }}"
+
+- name: Force drive opening
+  ansible.builtin.command: "cryptdisks_start {{ luks_key | basename }}"
+  become: true
 
 - name: Mount
   block: 
