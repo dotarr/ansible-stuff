@@ -37,7 +37,7 @@
       - git
       - qemu-guest-agent
       - rsync
-    state: latest
+    state: present
     update_cache: true
 
 - name: Add i915 firmware 
@@ -86,7 +86,7 @@
 - name: Update apt and install docker-ce
   apt:
     name: docker-ce
-    state: latest
+    state: present
     update_cache: true
 
 - name: Adding user to docker group

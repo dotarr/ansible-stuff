@@ -5,9 +5,9 @@
     - role: ../../roles/dropbear_luks
     - role: lae.proxmox
       vars:
-        - pve_group: all
-        - pve_reboot_on_kernel_update: true
-        - pve_repository_line: "deb http://download.proxmox.com/debian/pve bullseye pve-no-subscription" 
-        - pve_remove_subscription_warning: true
+        pve_group: all
+        pve_reboot_on_kernel_update: true
+        pve_repository_line: "deb http://download.proxmox.com/debian/pve bullseye pve-no-subscription"
+        pve_remove_subscription_warning: true
     - role: ../../roles/setup_network_bridge
     - role: ../../roles/host_gpu_passthrough

@@ -5,7 +5,7 @@
     pkg:
       - cryptsetup
       - systemd-cryptsetup
-    state: latest
+    state: present
     update_cache: true
 
 - name: Copy keyfile
@@ -13,7 +13,7 @@
     src: "{{ luks_key }}"
     dest: "/etc/{{ luks_key | basename }}"
     owner: root
-    mode: '0644'
+    mode: '0400'
 
 - name: Add to Crypttab
   community.general.crypttab:
@@ -26,6 +26,8 @@
 - name: Force drive opening
   ansible.builtin.command: "cryptdisks_start {{ luks_key | basename }}"
   become: true
+  args:
+    creates: "/dev/mapper/{{ luks_key | basename }}"
 
 - name: Mount
   block: 
