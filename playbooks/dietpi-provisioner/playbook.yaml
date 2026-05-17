@@ -1,0 +1,18 @@
+- name: DietPi Provisioner
+  hosts: dietpi
+  become: true
+  gather_facts: false
+  pre_tasks:
+    - name: Install Python
+      raw: apt-get install -y python3
+      changed_when: false
+
+    - name: Gather facts
+      setup:
+
+  roles:
+    - role: ../../roles/unattended_upgrades
+      vars:
+        unattended_upgrades_origins:
+          - '"origin=*";'
+        unattended_upgrades_automatic_reboot: true
