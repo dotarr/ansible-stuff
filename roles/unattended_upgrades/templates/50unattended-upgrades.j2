@@ -1,0 +1,36 @@
+// Managed by Ansible - do not edit manually
+
+Unattended-Upgrade::Origins-Pattern {
+{% for origin in unattended_upgrades_origins %}
+        {{ origin }}
+{% endfor %}
+};
+
+Unattended-Upgrade::Package-Blacklist {
+{% for pkg in unattended_upgrades_blacklist %}
+        "{{ pkg }}";
+{% endfor %}
+};
+
+Unattended-Upgrade::AutoFixInterruptedDpkg {{ unattended_upgrades_autofix_interrupted | lower }};
+
+Unattended-Upgrade::MinimalSteps "{{ unattended_upgrades_minimal_steps | lower }}";
+
+Unattended-Upgrade::InstallOnShutdown "{{ unattended_upgrades_install_on_shutdown | lower }}";
+
+{% if unattended_upgrades_mail %}
+Unattended-Upgrade::Mail "{{ unattended_upgrades_mail }}";
+Unattended-Upgrade::MailReport "{{ unattended_upgrades_mail_report }}";
+{% endif %}
+
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "{{ unattended_upgrades_remove_unused_kernel_packages | lower }}";
+
+Unattended-Upgrade::Remove-New-Unused-Dependencies "{{ unattended_upgrades_remove_new_unused_dependencies | lower }}";
+
+Unattended-Upgrade::Remove-Unused-Dependencies "{{ unattended_upgrades_remove_unused_dependencies | lower }}";
+
+Unattended-Upgrade::Automatic-Reboot "{{ unattended_upgrades_automatic_reboot | lower }}";
+
+Unattended-Upgrade::Automatic-Reboot-WithUsers "{{ unattended_upgrades_automatic_reboot_with_users | lower }}";
+
+Unattended-Upgrade::Automatic-Reboot-Time "{{ unattended_upgrades_automatic_reboot_time }}";
