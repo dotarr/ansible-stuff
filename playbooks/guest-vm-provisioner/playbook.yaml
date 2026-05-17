@@ -2,6 +2,11 @@
   hosts: debian-guest
   become: true
   roles:
+    - role: ../../roles/unattended_upgrades
+      vars:
+        unattended_upgrades_origins:
+          - '"origin=*";'
+        unattended_upgrades_automatic_reboot: true
     - role: ../../roles/provision_guest
     - role: ../../roles/crypttab
       vars: 
