@@ -1,0 +1,4 @@
+---
+nfs_share_src: ""
+nfs_share_export: ""
+nfs_share_clients: "*(rw,sync,no_subtree_check)"

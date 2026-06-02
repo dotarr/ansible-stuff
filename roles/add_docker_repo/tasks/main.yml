@@ -1,0 +1,34 @@
+---
+
+- name: Install prerequisites
+  apt:
+    pkg:
+      - git
+      - rsync
+    state: present
+    update_cache: true
+
+- name: Generate SSH key 
+  openssh_keypair:
+    path: "~/.ssh/id_ed25519"
+    type: ed25519
+    state: present
+  become: False
+
+- name: Check SSH public key   
+  command: /bin/cat /home/{{ ansible_user }}/.ssh/id_ed25519.pub
+  register: cat
+  changed_when: False
+
+- name: Print SSH public key
+  debug: var=cat.stdout
+
+- name: Wait for user to copy SSH public key   
+  pause: prompt="Please add the SSH public key above to your GitHub account"
+
+- name: Checkout services repo
+  become: False
+  git:
+    repo: "{{ services_repo }}"
+    dest: "/home/{{ ansible_user }}/docker-stuff"
+    accept_newhostkey: true

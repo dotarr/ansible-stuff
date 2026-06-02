@@ -1,0 +1,32 @@
+---
+
+- name: Install prerequisites
+  apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+    state: present
+    update_cache: true
+
+- name: Add repo using key from URL
+  deb822_repository:
+    name: docker
+    types: deb
+    uris: https://download.docker.com/linux/debian
+    suites: trixie
+    components: stable
+    architectures: amd64
+    signed_by: https://download.docker.com/linux/debian/gpg
+
+- name: Update apt and install docker-ce
+  apt:
+    name: docker-ce
+    state: present
+    update_cache: true
+
+- name: Adding user to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes

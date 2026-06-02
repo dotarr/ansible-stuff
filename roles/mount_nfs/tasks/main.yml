@@ -1,0 +1,31 @@
+---
+
+- name: Install prerequisites
+  apt:
+    pkg:
+      - nfs-common
+      - rsync
+    state: present
+    update_cache: true
+
+- name: Stat mountpoint
+  stat:
+    path: "{{ nfs_mountpoint }}"
+  register: mp_stat
+
+- name: Create mountpoint
+  ansible.builtin.file:
+    path: "{{ nfs_mountpoint }}"
+    state: directory
+    mode: 0666
+    owner: root
+    group: users
+  when: not mp_stat.stat.exists
+
+- name: Mount network share
+  ansible.posix.mount:
+    src: "{{ nfs_location }}"
+    path: "{{ nfs_mountpoint }}"
+    fstype: nfs
+    opts: "rw,auto,hard,intr,rsize=8192,wsize=8192,timeo=14"
+    state: mounted

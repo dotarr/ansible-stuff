@@ -7,10 +7,14 @@
         unattended_upgrades_origins:
           - '"origin=*";'
         unattended_upgrades_automatic_reboot: true
-    - role: ../../roles/provision_guest
-    - role: ../../roles/crypttab
-      vars: 
-        luks_key: ../../luks-keys/scratch
-        mountpoint: /scratch
-        luks_device_id: 9e9f39a4-216e-4dbe-aae4-d2089c2e017a
-        mount: true
+    - role: ../../roles/install_i915_firmware
+    - role: ../../roles/install_guest_agent
+    - role: ../../roles/install_docker
+    - role: ../../roles/mount_nfs
+    - role: ../../roles/add_docker_repo
+    # - role: ../../roles/crypttab
+    #   vars: 
+    #     luks_key: ../../luks-keys/scratch
+    #     mountpoint: /scratch
+    #     luks_device_id: 9e9f39a4-216e-4dbe-aae4-d2089c2e017a
+    #     mount: true

@@ -1,5 +1,0 @@
----
-nfs_mountpoint: /mnt/dataonnas
-nfs_location: omv.teleranger.xyz:/data
-services_repo: git@github.com:dotarr/docker-stuff.git
-firmware_version: linux-firmware-20260410

@@ -2,6 +2,10 @@
   hosts: omv
   become: true
   roles:
+    - role: ../../roles/unattended_upgrades
+      vars:
+        unattended_upgrades_origins:
+          - '"origin=*";'
     - role: ../../roles/crypttab
       vars: 
         luks_key: ../../luks-keys/8tbnas

@@ -1,0 +1,41 @@
+---
+
+- name: Install prerequisites
+  apt:
+    pkg:
+      - nfs-kernel-server
+    state: present
+    update_cache: true
+
+- name: Ensure share source path exists
+  ansible.builtin.file:
+    path: "{{ nfs_share_src }}"
+    state: directory
+
+- name: Ensure export path exists
+  ansible.builtin.file:
+    path: "{{ nfs_share_export }}"
+    state: directory
+
+- name: Bind mount source path to export path
+  ansible.posix.mount:
+    src: "{{ nfs_share_src }}"
+    path: "{{ nfs_share_export }}"
+    fstype: none
+    opts: bind
+    state: mounted
+  when: nfs_share_src != nfs_share_export
+
+- name: Add export entry
+  ansible.builtin.lineinfile:
+    path: /etc/exports
+    line: "{{ nfs_share_export }}    {{ nfs_share_clients }}"
+    regexp: "^{{ nfs_share_export | regex_escape() }}\\s"
+    state: present
+  notify: Re-export NFS shares
+
+- name: Enable and start nfs-kernel-server
+  ansible.builtin.systemd:
+    name: nfs-kernel-server
+    state: started
+    enabled: true
