@@ -6,7 +6,6 @@
     - name: Install Python
       raw: apt-get install -y python3
       changed_when: false
-
     - name: Gather facts
       setup:
 

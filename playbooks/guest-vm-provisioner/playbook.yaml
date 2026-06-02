@@ -11,6 +11,12 @@
     - role: ../../roles/install_guest_agent
     - role: ../../roles/install_docker
     - role: ../../roles/mount_nfs
+    - role: ../../roles/nfs_share
+      vars:
+        nfs_share_src: /scratch
+        nfs_share_export: /export/scratch
+        nfs_share_allowed_ips:
+          - 192.168.247.126
     - role: ../../roles/add_docker_repo
     # - role: ../../roles/crypttab
     #   vars: 

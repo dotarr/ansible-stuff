@@ -1,4 +1,6 @@
 ---
 nfs_share_src: ""
 nfs_share_export: ""
-nfs_share_clients: "*(rw,sync,no_subtree_check)"
+nfs_share_allowed_ips: []
+nfs_share_client_options: "rw,sync,no_subtree_check"
+nfs_export_root_options: "ro,fsid=0,no_subtree_check"
