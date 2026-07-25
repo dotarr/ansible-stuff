@@ -1,0 +1,26 @@
+---
+- name: Get running containers
+  ansible.builtin.command: docker ps -q
+  register: running_containers
+  changed_when: false
+
+- name: Stop running containers
+  ansible.builtin.command: "docker stop {{ running_containers.stdout_lines | join(' ') }}"
+  when: running_containers.stdout_lines | length > 0
+
+- name: Check backup directory exists
+  ansible.builtin.stat:
+    path: "{{ docker_backup_dest }}"
+  register: backup_dest_stat
+
+- name: Ensure backup directory exists
+  ansible.builtin.file:
+    path: "{{ docker_backup_dest }}"
+    state: directory
+    mode: "0755"
+  when: not backup_dest_stat.stat.exists
+
+- name: Snapshot docker-stuff directory
+  ansible.builtin.command: >
+    tar cvzf {{ docker_backup_dest }}/docker_stuff_snapshot_{{ ansible_date_time.year }}_{{ ansible_date_time.month }}_{{ ansible_date_time.day }}.tar.gz
+    -C {{ docker_backup_src | dirname }} {{ docker_backup_src | basename }}

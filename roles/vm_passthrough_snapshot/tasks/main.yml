@@ -1,0 +1,63 @@
+---
+- name: Get current VM config
+  ansible.builtin.command: "qm config {{ target_vmid }}"
+  register: vm_config
+  changed_when: false
+
+- name: Identify disk passthrough lines
+  ansible.builtin.set_fact:
+    passthrough_disk_lines: "{{ vm_config.stdout_lines | select('match', '^scsi[0-9]+: /dev/disk/by-id/') | list }}"
+    passthrough_gpu_lines: "{{ vm_config.stdout_lines | select('match', '^hostpci[0-9]+:') | list }}"
+
+- name: Stop VM
+  ansible.builtin.command: "qm stop {{ target_vmid }}"
+
+- name: Wait for VM to be fully stopped
+  ansible.builtin.command: "qm status {{ target_vmid }}"
+  register: vm_status
+  until: "'stopped' in vm_status.stdout"
+  retries: 12
+  delay: 5
+  changed_when: false
+
+- block:
+    - name: Remove disk passthroughs
+      vars:
+        key: "{{ item.split(':')[0] }}"
+      ansible.builtin.command: "qm set {{ target_vmid }} --delete {{ key }}"
+      loop: "{{ passthrough_disk_lines }}"
+
+    - name: Remove GPU passthroughs
+      vars:
+        key: "{{ item.split(':')[0] }}"
+      ansible.builtin.command: "qm set {{ target_vmid }} --delete {{ key }}"
+      loop: "{{ passthrough_gpu_lines }}"
+
+    - name: Snapshot VM
+      ansible.builtin.command: "qm snapshot {{ target_vmid }} {{ snapshot_name }}"
+
+  rescue:
+    - name: Re-raise the snapshot failure
+      ansible.builtin.fail:
+        msg: "Snapshot of VM {{ target_vmid }} failed; passthrough config will be restored (and VM restarted if restore_and_start=true) regardless."
+
+  always:
+    - name: Restore disk passthroughs
+      vars:
+        key: "{{ item.split(':')[0] }}"
+        value: "{{ item.split(': ', 1)[1] }}"
+      ansible.builtin.command: "qm set {{ target_vmid }} -{{ key }} {{ value }}"
+      loop: "{{ passthrough_disk_lines }}"
+      when: restore_and_start
+
+    - name: Restore GPU passthroughs
+      vars:
+        key: "{{ item.split(':')[0] }}"
+        value: "{{ item.split(': ', 1)[1] }}"
+      ansible.builtin.command: "qm set {{ target_vmid }} -{{ key }} {{ value }}"
+      loop: "{{ passthrough_gpu_lines }}"
+      when: restore_and_start
+
+    - name: Start VM
+      ansible.builtin.command: "qm start {{ target_vmid }}"
+      when: restore_and_start

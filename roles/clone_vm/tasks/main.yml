@@ -7,6 +7,9 @@
 - name: Clone VM
   ansible.builtin.command: "qm clone {{ template_id }} {{ vmid.stdout }} --name {{ vm_name }} --full true"
 
+- name: Convert boot disk to qcow2 (raw disks on dir storage can't be snapshotted)
+  ansible.builtin.command: "qm disk move {{ vmid.stdout }} scsi0 local --format qcow2 --delete"
+
 - name: Passthrough GPU
   ansible.builtin.command: "qm set {{ vmid.stdout }} -hostpci0 {{ gpu_pci_address }},pcie=on"
   when: passthrough_gpu
