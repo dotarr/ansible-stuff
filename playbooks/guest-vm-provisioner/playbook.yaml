@@ -16,7 +16,7 @@
         nfs_share_src: /scratch
         nfs_share_export: /export/scratch
         nfs_share_allowed_ips:
-          - 192.168.247.126
+          - 192.168.247.15
     - role: ../../roles/add_docker_repo
     # - role: ../../roles/crypttab
     #   vars: 
