@@ -1,0 +1,25 @@
+---
+- name: Set CPU type to host for full feature passthrough
+  ansible.builtin.command: "qm set {{ target_vmid }} -cpu host"
+
+- name: Use virtio-scsi-single controller for iothread support
+  ansible.builtin.command: "qm set {{ target_vmid }} -scsihw virtio-scsi-single"
+
+- name: Get current VM config
+  ansible.builtin.command: "qm config {{ target_vmid }}"
+  register: vm_config
+  changed_when: false
+
+- name: Enable iothread on scsi disks
+  vars:
+    disk_name: "{{ item.split(':')[0] }}"
+    disk_value: "{{ item.split(': ', 1)[1] }}"
+  ansible.builtin.command: "qm set {{ target_vmid }} -{{ disk_name }} {{ disk_value }},iothread=1"
+  loop: "{{ vm_config.stdout_lines | select('match', '^scsi[0-9]+:') | reject('search', 'iothread=1') | list }}"
+
+- name: Enable multiqueue networking
+  vars:
+    net_name: "{{ item.split(':')[0] }}"
+    net_value: "{{ item.split(': ', 1)[1] }}"
+  ansible.builtin.command: "qm set {{ target_vmid }} -{{ net_name }} {{ net_value }},queues={{ net_queues }}"
+  loop: "{{ vm_config.stdout_lines | select('match', '^net[0-9]+:') | reject('search', 'queues=') | list }}"

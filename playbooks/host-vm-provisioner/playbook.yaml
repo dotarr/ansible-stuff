@@ -2,6 +2,14 @@
   hosts: proxmox
   become: true
   gather_facts: false
+  pre_tasks:
+    - name: Lower host swappiness for VM-hosting workload
+      ansible.posix.sysctl:
+        name: vm.swappiness
+        value: "10"
+        sysctl_file: /etc/sysctl.d/99-swappiness.conf
+        state: present
+        reload: true
   roles:
     - role: mirceanton.proxmox_cloudbuntu
       vars:
@@ -27,6 +35,9 @@
         passthrough_gpu: true
         gpu_pci_address: "0000:00:02"
         passthrough_ssd_id: nvme-WDC_WDS480G2G0C-00AJM0_223764448712
+    - role: ../../roles/vm_perf_tuning
+      vars:
+        target_vmid: "{{ vmid.stdout }}"
 
     # - role: ../../roles/import_omv
     #   vars:
@@ -38,3 +49,7 @@
     #     template_id: 9005
     #     passthrough_gpu: false
     #     passthrough_ssd_id: ata-WDC_WD80EDAZ-11TA3A0_VDKJJL9K
+
+    - role: ../../roles/vm_perf_tuning
+      vars:
+        target_vmid: 101 # omv, provisioned outside this repo (imported backup, not cloned)

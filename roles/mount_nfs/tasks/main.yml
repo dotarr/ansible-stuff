@@ -27,5 +27,5 @@
     src: "{{ nfs_location }}"
     path: "{{ nfs_mountpoint }}"
     fstype: nfs
-    opts: "rw,auto,hard,intr,rsize=8192,wsize=8192,timeo=14"
+    opts: "rw,auto,hard,intr,timeo=14"
     state: mounted
