@@ -1,0 +1,13 @@
+---
+os_type: l26
+cpu_cores: 1
+cpu_type: host
+ram: 1024
+machine_type: pc
+bios_type: seabios
+net_driver: virtio
+net_bridge: vmbr0
+disk_scsihw: virtio-scsi-pci
+ci_ipconfig: ip=dhcp
+snippets_path: /var/lib/vz/snippets/
+snippets_device: local

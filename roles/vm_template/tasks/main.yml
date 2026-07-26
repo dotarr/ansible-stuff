@@ -1,0 +1,117 @@
+---
+- name: Download cloud image
+  ansible.builtin.get_url:
+    url: "{{ image_link }}"
+    dest: "{{ image_dest }}"
+    mode: u=rw,g=r,o=
+
+- name: Create snippets directory
+  ansible.builtin.file:
+    path: "{{ snippets_path }}"
+    state: directory
+    mode: u=rwx,g=rx,o=r
+
+- name: Import qemu-guest-agent cloud-init snippet
+  ansible.builtin.copy:
+    src: snippets/qemu-ga.yml
+    dest: "{{ snippets_path }}/qemu-ga.yml"
+    mode: u=rw,g=r,o=
+
+- name: Create VM
+  ansible.builtin.command: "qm create {{ vmid }} --name {{ vm_name }}"
+  args:
+    creates: "/etc/pve/qemu-server/{{ vmid }}.conf"
+  register: vm_create
+
+- name: Configure VM and convert to template
+  when: vm_create.changed
+  block:
+    - name: Set OS type
+      ansible.builtin.command: "qm set {{ vmid }} --ostype {{ os_type }}"
+
+    - name: Allocate CPU
+      ansible.builtin.command: "qm set {{ vmid }} --cores {{ cpu_cores }} --cpu {{ cpu_type }}"
+
+    - name: Allocate RAM
+      ansible.builtin.command: "qm set {{ vmid }} --memory {{ ram }}"
+
+    - name: Set machine type
+      ansible.builtin.command: "qm set {{ vmid }} --machine {{ machine_type }}"
+
+    - name: Assign network interface
+      ansible.builtin.command: "qm set {{ vmid }} --net0 {{ net_driver }},bridge={{ net_bridge }}"
+
+    - name: Configure cloud-init network
+      ansible.builtin.command: "qm set {{ vmid }} --ipconfig0 {{ ci_ipconfig }}"
+
+    - name: Set nameserver
+      ansible.builtin.command: "qm set {{ vmid }} --nameserver {{ ci_nameserver }}"
+      when: ci_nameserver is defined
+
+    - name: Set search domain
+      ansible.builtin.command: "qm set {{ vmid }} --searchdomain {{ ci_searchdomain }}"
+      when: ci_searchdomain is defined
+
+    - name: Import boot disk
+      ansible.builtin.command: "qm importdisk {{ vmid }} {{ image_dest }} {{ disk_device }}"
+
+    - name: Attach boot disk
+      ansible.builtin.command: "qm set {{ vmid }} --scsihw {{ disk_scsihw }} --scsi0 {{ disk_device }}:{{ vmid }}/vm-{{ vmid }}-disk-0.raw"
+
+    - name: Resize boot disk
+      ansible.builtin.command: "qm resize {{ vmid }} scsi0 {{ disk_size }}"
+
+    - name: Create cloud-init disk
+      ansible.builtin.command: "qm set {{ vmid }} --ide2 {{ disk_device }}:cloudinit"
+
+    - name: Set bios type to UEFI
+      ansible.builtin.command: "qm set {{ vmid }} --bios {{ bios_type }} --efidisk0 {{ disk_device }}:0"
+      when: bios_type == "ovmf"
+
+    - name: Set boot order
+      ansible.builtin.command: "qm set {{ vmid }} --boot c --bootdisk scsi0"
+
+    - name: Create serial terminal
+      ansible.builtin.command: "qm set {{ vmid }} --serial0 socket --vga serial0"
+
+    - name: Set cloud-init user
+      ansible.builtin.command: "qm set {{ vmid }} --ciuser {{ ci_user }}"
+      when: ci_user is defined
+
+    - name: Set cloud-init password
+      ansible.builtin.command: "qm set {{ vmid }} --cipassword {{ ci_pass }}"
+      when: ci_pass is defined
+
+    - name: Set cloud-init ssh keys
+      when: ci_keys is defined
+      block:
+        - name: Write ssh keys file
+          ansible.builtin.lineinfile:
+            path: "/tmp/{{ vmid }}-ssh-keys"
+            line: "{{ item }}"
+            create: true
+            mode: "0600"
+          loop: "{{ ci_keys }}"
+
+        - name: Set VM ssh keys
+          ansible.builtin.command: "qm set {{ vmid }} --sshkeys /tmp/{{ vmid }}-ssh-keys"
+
+        - name: Remove ssh keys file
+          ansible.builtin.file:
+            path: "/tmp/{{ vmid }}-ssh-keys"
+            state: absent
+
+    - name: Set cloud-init vendor snippet (installs qemu-guest-agent)
+      ansible.builtin.command: "qm set {{ vmid }} --cicustom vendor={{ snippets_device }}:snippets/qemu-ga.yml"
+
+    - name: Enable qemu guest agent
+      ansible.builtin.command: "qm set {{ vmid }} --agent 1"
+
+    - name: Convert VM to template
+      ansible.builtin.command: "qm template {{ vmid }}"
+  rescue:
+    - name: "[ERROR] VM configuration failed, deleting VM"
+      ansible.builtin.command: "qm destroy {{ vmid }}"
+    - name: Fail the play
+      ansible.builtin.fail:
+        msg: "vm_template: configuration of VM {{ vmid }} failed, VM destroyed"
