@@ -1,0 +1,3 @@
+---
+snapshot_name: "backup_{{ ansible_date_time.year }}_{{ ansible_date_time.month }}_{{ ansible_date_time.day }}"
+restore_and_start: true

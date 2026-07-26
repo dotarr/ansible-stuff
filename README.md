@@ -1,6 +1,13 @@
 # ansible-stuff
 Ansible Playbooks, Roles etc
 
+## Setup
+Install external role dependencies before running any playbook:
+```
+ansible-galaxy install -r requirements.yml
+```
+(see requirements.yml for a note on mirceanton.proxmox_cloudbuntu's broken upstream repo)
+
 Provisions
 * Proxmox host
     - Unlocking of encrypted volume over ssh via dropbear-luks

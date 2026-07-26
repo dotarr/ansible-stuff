@@ -1,0 +1,14 @@
+- name: Backup docker-stuff on vmdeb3
+  hosts: debian-guest
+  become: true
+  roles:
+    - role: ../../roles/docker_backup
+
+- name: Snapshot vmdeb3 on proxmox
+  hosts: proxmox
+  become: true
+  gather_facts: true
+  roles:
+    - role: ../../roles/vm_passthrough_snapshot
+      vars:
+        target_vmid: 103

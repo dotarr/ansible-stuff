@@ -1,0 +1,13 @@
+---
+# NOTE: mirceanton.proxmox_cloudbuntu's upstream GitHub repo currently 404s,
+# so `ansible-galaxy install -r requirements.yml` can't fetch it from scratch.
+# It's only usable right now because a copy was manually restored into
+# ~/.ansible/roles - see clone_vm/host-vm-provisioner for where it's used.
+# To be migrated off later.
+roles:
+  - name: mirceanton.proxmox_cloudbuntu
+    version: v2.0.0
+  - name: lae.proxmox
+    version: v1.7.1
+  - name: lifeofguenter.resolvconf
+    version: 0.2.1
