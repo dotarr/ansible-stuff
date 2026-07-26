@@ -1,0 +1,50 @@
+---
+
+- name: Install required packages
+  package:
+    name: "{{item}}"
+    state: present
+  with_items:
+    - dropbear
+    - putty-tools
+  notify:
+    - Update initramfs
+
+- name: Disable persistent dropbear service
+  ansible.builtin.systemd:
+    name: dropbear.service
+    enabled: false
+    masked: true
+    state: stopped
+  # The dropbear package's systemd unit ignores /etc/default/dropbear's
+  # NO_START=1 and starts anyway, racing ssh.service for port 22 on boot
+  # and winning - which then crashes ssh.service with "Address already
+  # in use". Dropbear here is only meant to run pre-boot from the
+  # initramfs to unlock the LUKS root volume, never as a persistent
+  # service on the booted system.
+
+- name: Copy SSH public key to the remote server
+  ansible.posix.authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', ssh_pub_key) }}"
+    key_options: command="cryptroot-unlock"
+    path: /etc/dropbear-initramfs/authorized_keys
+  notify:
+    - Update initramfs
+
+- name: Convert host SSH keys for Dropbear
+  shell: |
+    set -o pipefail
+    puttygen /etc/ssh/ssh_host_{{item}}_key -O private-openssh -o ssh_host_{{item}}_key.pem
+    /usr/lib/dropbear/dropbearconvert openssh dropbear ssh_host_{{item}}_key.pem /etc/dropbear-initramfs/dropbear_{{item}}_host_key
+    rm ssh_host_*
+  args:
+    executable: /bin/bash
+    chdir: /etc/dropbear-initramfs
+  with_items:
+    - ed25519
+    - rsa
+    - ecdsa
+  notify:
+    - Update initramfs
