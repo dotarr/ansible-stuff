@@ -22,5 +22,5 @@
 
 - name: Snapshot docker-stuff directory
   ansible.builtin.command: >
-    tar cvzf {{ docker_backup_dest }}/docker_stuff_snapshot_{{ ansible_date_time.year }}_{{ ansible_date_time.month }}_{{ ansible_date_time.day }}.tar.gz
+    tar cvf {{ docker_backup_dest }}/docker_stuff_snapshot_{{ ansible_date_time.year }}_{{ ansible_date_time.month }}_{{ ansible_date_time.day }}.tar
     -C {{ docker_backup_src | dirname }} {{ docker_backup_src | basename }}
