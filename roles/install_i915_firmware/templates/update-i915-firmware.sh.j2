@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 # {{ ansible_managed }}
+#
+# Checks kernel.org for a newer linux-firmware release and, if found,
+# installs its i915/ subtree to /lib/firmware and regenerates initramfs.
+# Deployed to /usr/local/sbin/update-i915-firmware.sh and run two ways:
+#   - once by ansible on every apply (exit code signals whether a reboot
+#     is needed; ansible's own reboot handler handles it from there)
+#   - weekly by i915-firmware-update.timer, with AUTO_REBOOT=1 set so it
+#     reboots itself when needed (unless a reboot is already pending from
+#     something else, e.g. unattended-upgrades)
+#
+# Exit codes: 0 = no update needed (or, with AUTO_REBOOT=1, updated and
+# handled its own reboot decision); 1 = error; 10 = updated, no reboot
+# taken - caller (ansible) should reboot.
 set -euo pipefail
 
 firmware_index_url="https://www.kernel.org/pub/linux/kernel/firmware/"
