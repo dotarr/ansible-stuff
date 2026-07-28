@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Check for and install updated i915 firmware
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=AUTO_REBOOT=1
+ExecStart=/usr/local/sbin/update-i915-firmware.sh

@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+#
+# Checks kernel.org for a newer linux-firmware release and, if found,
+# installs its i915/ subtree to /lib/firmware and regenerates initramfs.
+# Deployed to /usr/local/sbin/update-i915-firmware.sh and run two ways:
+#   - once by ansible on every apply (exit code signals whether a reboot
+#     is needed; ansible's own reboot handler handles it from there)
+#   - weekly by i915-firmware-update.timer, with AUTO_REBOOT=1 set so it
+#     reboots itself when needed (unless a reboot is already pending from
+#     something else, e.g. unattended-upgrades)
+#
+# Exit codes: 0 = no update needed (or, with AUTO_REBOOT=1, updated and
+# handled its own reboot decision); 1 = error; 10 = updated, no reboot
+# taken - caller (ansible) should reboot.
+set -euo pipefail
+
+firmware_index_url="https://www.kernel.org/pub/linux/kernel/firmware/"
+state_file="/var/lib/i915-firmware/version"
+firmware_dest="/lib/firmware"
+
+mkdir -p "$(dirname "$state_file")"
+
+latest=$(curl -fsSL "$firmware_index_url" | grep -oE 'linux-firmware-[0-9]{8}' | sort | tail -n1)
+if [ -z "$latest" ]; then
+    echo "Could not determine latest firmware version" >&2
+    exit 1
+fi
+
+current=""
+[ -f "$state_file" ] && current=$(cat "$state_file")
+
+if [ "$current" = "$latest" ]; then
+    echo "i915 firmware already at latest ($latest)"
+    exit 0
+fi
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+curl -fsSL "${firmware_index_url}${latest}.tar.gz" | tar -xz -C "$tmpdir" "${latest}/i915"
+cp -a "$tmpdir/$latest/i915" "$firmware_dest/"
+echo "$latest" > "$state_file"
+update-initramfs -u -k all
+
+echo "i915 firmware updated to $latest"
+
+if [ "${AUTO_REBOOT:-0}" = "1" ]; then
+    if [ -f /var/run/reboot-required ]; then
+        echo "Reboot already pending from another source (e.g. unattended-upgrades) - leaving it to that, not rebooting now"
+        exit 0
+    fi
+    echo "Rebooting to load new i915 firmware"
+    systemctl reboot
+    exit 0
+fi
+
+exit 10

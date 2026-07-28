@@ -1,30 +1,9 @@
 ---
 
-- name: Create directory for ansible facts
-  ansible.builtin.file:
-    state: directory
-    recurse: true
-    path: /etc/ansible/facts.d
-
-- name: Copy fact template
-  template:
-    src: firmware.j2
-    dest: /etc/ansible/facts.d/firmware.fact
-    force: False
-
-- name: Re-read facts after adding custom fact
-  ansible.builtin.setup:
-    filter: ansible_local
-
-- name: Fetch firmware index
-  ansible.builtin.uri:
-    url: https://www.kernel.org/pub/linux/kernel/firmware/
-    return_content: yes
-  register: firmware_index
-
-- name: Set latest firmware version
-  ansible.builtin.set_fact:
-    firmware_version: "{{ firmware_index.content | regex_findall('linux-firmware-\\d{8}') | sort | last }}"
+- name: Ensure curl is installed
+  ansible.builtin.apt:
+    name: curl
+    state: present
 
 - name: Copy modprobe config
   template:
@@ -37,30 +16,40 @@
     name: ip6_tables
     persistent: present
 
-- name: Add i915 firmware
-  when: ansible_local.firmware.info.version | default('') != firmware_version
-  block:
-    - name: Download & extract firmware tarball
-      ansible.builtin.unarchive:
-        src: "https://www.kernel.org/pub/linux/kernel/firmware/{{ firmware_version }}.tar.gz"
-        dest: "/home/{{ ansible_user }}"
-        remote_src: yes
-    - name: Copy i915 firmware
-      ansible.builtin.copy:
-          src: "/home/{{ ansible_user }}/{{ firmware_version }}/i915"
-          dest: "/lib/firmware"
-          owner: root
-          group: root
-          remote_src: yes
-      notify: Update initramfs
-    - name: Update firmware facts
-      community.general.ini_file:
-        path: /etc/ansible/facts.d/firmware.fact
-        section: info
-        option: version
-        value: "{{ firmware_version }}"
-  always:
-    - name: Cleanup
-      ansible.builtin.file:
-        path: "/home/{{ ansible_user }}/{{ firmware_version }}"
-        state: absent
+- name: Copy i915 firmware update script
+  ansible.builtin.template:
+    src: update-i915-firmware.sh.j2
+    dest: /usr/local/sbin/update-i915-firmware.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy i915 firmware update systemd service
+  ansible.builtin.template:
+    src: i915-firmware-update.service.j2
+    dest: /etc/systemd/system/i915-firmware-update.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy i915 firmware update systemd timer
+  ansible.builtin.template:
+    src: i915-firmware-update.timer.j2
+    dest: /etc/systemd/system/i915-firmware-update.timer
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable and start i915 firmware update timer
+  ansible.builtin.systemd:
+    name: i915-firmware-update.timer
+    daemon_reload: true
+    enabled: true
+    state: started
+
+- name: Run i915 firmware update script
+  ansible.builtin.command: /usr/local/sbin/update-i915-firmware.sh
+  register: i915_firmware_update
+  changed_when: i915_firmware_update.rc == 10
+  failed_when: i915_firmware_update.rc not in [0, 10]
+  notify: Reboot
