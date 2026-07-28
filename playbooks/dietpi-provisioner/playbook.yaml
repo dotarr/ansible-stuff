@@ -15,3 +15,22 @@
         unattended_upgrades_origins:
           - '"origin=*";'
         unattended_upgrades_automatic_reboot: true
+
+  post_tasks:
+    - name: Unmask apt-daily services (DietPi image masks these by default, breaks unattended-upgrades)
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        masked: false
+      loop:
+        - apt-daily.service
+        - apt-daily-upgrade.service
+
+    - name: Unmask and enable apt-daily timers (DietPi image masks these by default, breaks unattended-upgrades)
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        masked: false
+        enabled: true
+        state: started
+      loop:
+        - apt-daily.timer
+        - apt-daily-upgrade.timer
