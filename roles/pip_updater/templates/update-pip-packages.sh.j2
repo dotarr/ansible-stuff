@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+#
+# Upgrades every outdated package (pip itself included, since it shows up
+# in --outdated like any other package) in the "{{ pip_updater_env_name }}"
+# pyenv virtualenv. Deployed to ~/.local/bin/update-pip-packages.sh and run
+# weekly by pip-update-user.timer.
+set -euo pipefail
+
+pip_bin="{{ pip_updater_pyenv_root }}/versions/{{ pip_updater_env_name }}/bin/pip"
+
+outdated=$("$pip_bin" list --outdated --format=json | python3 -c 'import json,sys; print("\n".join(p["name"] for p in json.load(sys.stdin)))')
+
+if [ -z "$outdated" ]; then
+    echo "All packages already up to date"
+    exit 0
+fi
+
+echo "$outdated" | xargs "$pip_bin" install --upgrade
+
+echo "Updated: $(echo "$outdated" | tr '\n' ' ')"

@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Nightly user Flatpak update
+
+[Timer]
+OnCalendar={{ flatpak_updater_calendar }}
+RandomizedDelaySec={{ flatpak_updater_randomized_delay }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target

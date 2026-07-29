@@ -1,0 +1,6 @@
+---
+
+flatpak_updater_user: "{{ ansible_user }}"
+flatpak_updater_binary: /usr/bin/flatpak
+flatpak_updater_calendar: "*-*-* 03:00:00"
+flatpak_updater_randomized_delay: 30min

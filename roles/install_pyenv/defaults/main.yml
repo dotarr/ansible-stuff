@@ -1,0 +1,23 @@
+---
+
+install_pyenv_user: "{{ ansible_user }}"
+install_pyenv_root: "{{ getent_passwd[install_pyenv_user][4] }}/.pyenv"
+install_pyenv_repo: https://github.com/pyenv/pyenv.git
+install_pyenv_virtualenv_repo: https://github.com/pyenv/pyenv-virtualenv.git
+
+install_pyenv_build_deps:
+  - build-essential
+  - libssl-dev
+  - zlib1g-dev
+  - libbz2-dev
+  - libreadline-dev
+  - libsqlite3-dev
+  - curl
+  - git
+  - libncurses-dev
+  - xz-utils
+  - tk-dev
+  - libxml2-dev
+  - libxmlsec1-dev
+  - libffi-dev
+  - liblzma-dev

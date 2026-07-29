@@ -1,0 +1,16 @@
+- name: Workstation Maintenance
+  hosts: workstation
+  become: true
+  gather_facts: true
+  roles:
+    - role: ../../roles/unattended_upgrades
+      vars:
+        # Pop!_OS ships Ubuntu security/updates plus its own system76/pop-os
+        # repos, none of which match the role's default Debian-only origin
+        # pattern - wildcard everything instead, same fix used for dietpi.
+        unattended_upgrades_origins:
+          - '"origin=*";'
+    - role: ../../roles/flatpak_updater
+    - role: ../../roles/install_pyenv
+    - role: ../../roles/pyenv_default_python
+    - role: ../../roles/pip_updater

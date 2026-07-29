@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Weekly pip package update
+
+[Timer]
+OnCalendar={{ pip_updater_calendar }}
+RandomizedDelaySec={{ pip_updater_randomized_delay }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target
