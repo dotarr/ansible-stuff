@@ -1,5 +1,5 @@
 - name: Debian Provisioner
-  hosts: debian-guest
+  hosts: debian_guest
   become: true
   roles:
     - role: ../../roles/unattended_upgrades

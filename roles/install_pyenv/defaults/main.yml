@@ -1,7 +1,7 @@
 ---
 
 install_pyenv_user: "{{ ansible_user }}"
-install_pyenv_root: "{{ getent_passwd[install_pyenv_user][4] }}/.pyenv"
+install_pyenv_root: "{{ ansible_facts.getent_passwd[install_pyenv_user][4] }}/.pyenv"
 install_pyenv_repo: https://github.com/pyenv/pyenv.git
 install_pyenv_virtualenv_repo: https://github.com/pyenv/pyenv-virtualenv.git
 

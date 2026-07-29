@@ -41,7 +41,7 @@
   become: true
   become_user: "{{ flatpak_updater_user }}"
   ansible.builtin.file:
-    path: "{{ getent_passwd[flatpak_updater_user][4] }}/.config/systemd/user"
+    path: "{{ ansible_facts.getent_passwd[flatpak_updater_user][4] }}/.config/systemd/user"
     state: directory
     mode: '0755'
 
@@ -50,7 +50,7 @@
   become_user: "{{ flatpak_updater_user }}"
   ansible.builtin.template:
     src: flatpak-update-user.service.j2
-    dest: "{{ getent_passwd[flatpak_updater_user][4] }}/.config/systemd/user/flatpak-update-user.service"
+    dest: "{{ ansible_facts.getent_passwd[flatpak_updater_user][4] }}/.config/systemd/user/flatpak-update-user.service"
     mode: '0644'
 
 - name: Copy flatpak user update systemd timer
@@ -58,7 +58,7 @@
   become_user: "{{ flatpak_updater_user }}"
   ansible.builtin.template:
     src: flatpak-update-user.timer.j2
-    dest: "{{ getent_passwd[flatpak_updater_user][4] }}/.config/systemd/user/flatpak-update-user.timer"
+    dest: "{{ ansible_facts.getent_passwd[flatpak_updater_user][4] }}/.config/systemd/user/flatpak-update-user.timer"
     mode: '0644'
 
 - name: Enable and start flatpak user update timer
@@ -71,4 +71,4 @@
     enabled: true
     state: started
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[flatpak_updater_user][1] }}"
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts.getent_passwd[flatpak_updater_user][1] }}"

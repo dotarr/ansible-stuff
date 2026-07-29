@@ -1,7 +1,7 @@
 ---
 
 pyenv_default_python_user: "{{ ansible_user }}"
-pyenv_default_python_root: "{{ getent_passwd[pyenv_default_python_user][4] }}/.pyenv"
+pyenv_default_python_root: "{{ ansible_facts.getent_passwd[pyenv_default_python_user][4] }}/.pyenv"
 # Empty = auto-detect latest stable 3.x release from `pyenv install --list`
 pyenv_default_python_version: ""
 pyenv_default_venv_name: default
