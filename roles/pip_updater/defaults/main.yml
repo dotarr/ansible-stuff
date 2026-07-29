@@ -1,7 +1,7 @@
 ---
 
 pip_updater_user: "{{ ansible_user }}"
-pip_updater_pyenv_root: "{{ getent_passwd[pip_updater_user][4] }}/.pyenv"
+pip_updater_pyenv_root: "{{ ansible_facts.getent_passwd[pip_updater_user][4] }}/.pyenv"
 pip_updater_env_name: default
 pip_updater_calendar: "Sun *-*-* 03:30:00"
 pip_updater_randomized_delay: 30min

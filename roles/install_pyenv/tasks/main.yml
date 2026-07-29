@@ -32,7 +32,7 @@
   become: "{{ install_pyenv_user != ansible_user }}"
   become_user: "{{ install_pyenv_user }}"
   ansible.builtin.blockinfile:
-    path: "{{ getent_passwd[install_pyenv_user][4] }}/.bashrc"
+    path: "{{ ansible_facts.getent_passwd[install_pyenv_user][4] }}/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK - pyenv"
     block: |
       export PYENV_ROOT="$HOME/.pyenv"

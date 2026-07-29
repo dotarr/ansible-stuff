@@ -9,7 +9,7 @@
   become: "{{ pip_updater_user != ansible_user }}"
   become_user: "{{ pip_updater_user }}"
   ansible.builtin.file:
-    path: "{{ getent_passwd[pip_updater_user][4] }}/.local/bin"
+    path: "{{ ansible_facts.getent_passwd[pip_updater_user][4] }}/.local/bin"
     state: directory
     mode: '0755'
 
@@ -18,14 +18,14 @@
   become_user: "{{ pip_updater_user }}"
   ansible.builtin.template:
     src: update-pip-packages.sh.j2
-    dest: "{{ getent_passwd[pip_updater_user][4] }}/.local/bin/update-pip-packages.sh"
+    dest: "{{ ansible_facts.getent_passwd[pip_updater_user][4] }}/.local/bin/update-pip-packages.sh"
     mode: '0755'
 
 - name: Ensure user systemd dir exists
   become: "{{ pip_updater_user != ansible_user }}"
   become_user: "{{ pip_updater_user }}"
   ansible.builtin.file:
-    path: "{{ getent_passwd[pip_updater_user][4] }}/.config/systemd/user"
+    path: "{{ ansible_facts.getent_passwd[pip_updater_user][4] }}/.config/systemd/user"
     state: directory
     mode: '0755'
 
@@ -34,7 +34,7 @@
   become_user: "{{ pip_updater_user }}"
   ansible.builtin.template:
     src: pip-update-user.service.j2
-    dest: "{{ getent_passwd[pip_updater_user][4] }}/.config/systemd/user/pip-update-user.service"
+    dest: "{{ ansible_facts.getent_passwd[pip_updater_user][4] }}/.config/systemd/user/pip-update-user.service"
     mode: '0644'
 
 - name: Copy pip update systemd timer
@@ -42,7 +42,7 @@
   become_user: "{{ pip_updater_user }}"
   ansible.builtin.template:
     src: pip-update-user.timer.j2
-    dest: "{{ getent_passwd[pip_updater_user][4] }}/.config/systemd/user/pip-update-user.timer"
+    dest: "{{ ansible_facts.getent_passwd[pip_updater_user][4] }}/.config/systemd/user/pip-update-user.timer"
     mode: '0644'
 
 - name: Check linger status for pip_updater_user
@@ -64,4 +64,4 @@
     enabled: true
     state: started
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[pip_updater_user][1] }}"
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts.getent_passwd[pip_updater_user][1] }}"
