@@ -1,0 +1,67 @@
+---
+
+- name: Look up pip_updater_user's uid and home dir
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ pip_updater_user }}"
+
+- name: Ensure user's ~/.local/bin exists
+  become: "{{ pip_updater_user != ansible_user }}"
+  become_user: "{{ pip_updater_user }}"
+  ansible.builtin.file:
+    path: "{{ getent_passwd[pip_updater_user][4] }}/.local/bin"
+    state: directory
+    mode: '0755'
+
+- name: Copy pip package update script
+  become: "{{ pip_updater_user != ansible_user }}"
+  become_user: "{{ pip_updater_user }}"
+  ansible.builtin.template:
+    src: update-pip-packages.sh.j2
+    dest: "{{ getent_passwd[pip_updater_user][4] }}/.local/bin/update-pip-packages.sh"
+    mode: '0755'
+
+- name: Ensure user systemd dir exists
+  become: "{{ pip_updater_user != ansible_user }}"
+  become_user: "{{ pip_updater_user }}"
+  ansible.builtin.file:
+    path: "{{ getent_passwd[pip_updater_user][4] }}/.config/systemd/user"
+    state: directory
+    mode: '0755'
+
+- name: Copy pip update systemd service
+  become: "{{ pip_updater_user != ansible_user }}"
+  become_user: "{{ pip_updater_user }}"
+  ansible.builtin.template:
+    src: pip-update-user.service.j2
+    dest: "{{ getent_passwd[pip_updater_user][4] }}/.config/systemd/user/pip-update-user.service"
+    mode: '0644'
+
+- name: Copy pip update systemd timer
+  become: "{{ pip_updater_user != ansible_user }}"
+  become_user: "{{ pip_updater_user }}"
+  ansible.builtin.template:
+    src: pip-update-user.timer.j2
+    dest: "{{ getent_passwd[pip_updater_user][4] }}/.config/systemd/user/pip-update-user.timer"
+    mode: '0644'
+
+- name: Check linger status for pip_updater_user
+  ansible.builtin.stat:
+    path: "/var/lib/systemd/linger/{{ pip_updater_user }}"
+  register: pip_updater_linger
+
+- name: Enable linger for pip_updater_user
+  ansible.builtin.command: "loginctl enable-linger {{ pip_updater_user }}"
+  when: not pip_updater_linger.stat.exists
+
+- name: Enable and start pip update user timer
+  become: "{{ pip_updater_user != ansible_user }}"
+  become_user: "{{ pip_updater_user }}"
+  ansible.builtin.systemd:
+    name: pip-update-user.timer
+    scope: user
+    daemon_reload: true
+    enabled: true
+    state: started
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ getent_passwd[pip_updater_user][1] }}"

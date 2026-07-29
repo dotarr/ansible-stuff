@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Update pip packages in the {{ pip_updater_env_name }} pyenv environment
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/update-pip-packages.sh
