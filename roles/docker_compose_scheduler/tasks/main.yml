@@ -6,7 +6,7 @@
     key: "{{ docker_compose_user }}"
 
 - name: Ensure user systemd dir exists
-  become: "{{ docker_compose_user != ansible_user }}"
+  become: "{{ docker_compose_user != ansible_facts.user_id }}"
   become_user: "{{ docker_compose_user }}"
   ansible.builtin.file:
     path: "{{ ansible_facts.getent_passwd[docker_compose_user][4] }}/.config/systemd/user"
@@ -14,7 +14,7 @@
     mode: '0755'
 
 - name: Copy docker compose up systemd service
-  become: "{{ docker_compose_user != ansible_user }}"
+  become: "{{ docker_compose_user != ansible_facts.user_id }}"
   become_user: "{{ docker_compose_user }}"
   ansible.builtin.template:
     src: docker-compose-up.service.j2
@@ -22,7 +22,7 @@
     mode: '0644'
 
 - name: Copy docker compose up systemd timer
-  become: "{{ docker_compose_user != ansible_user }}"
+  become: "{{ docker_compose_user != ansible_facts.user_id }}"
   become_user: "{{ docker_compose_user }}"
   ansible.builtin.template:
     src: docker-compose-up.timer.j2
@@ -39,7 +39,7 @@
   when: not docker_compose_linger.stat.exists
 
 - name: Enable and start docker compose up timer
-  become: "{{ docker_compose_user != ansible_user }}"
+  become: "{{ docker_compose_user != ansible_facts.user_id }}"
   become_user: "{{ docker_compose_user }}"
   ansible.builtin.systemd:
     name: "{{ docker_compose_service_name }}.timer"
