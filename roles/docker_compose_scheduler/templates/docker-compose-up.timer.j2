@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Weekly {{ docker_compose_service_name }} start
+
+[Timer]
+OnCalendar={{ docker_compose_calendar }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Start {{ docker_compose_service_name }} via docker compose
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory={{ docker_compose_project_dir }}
+ExecStart=/usr/bin/docker compose -f {{ docker_compose_file }} up -d

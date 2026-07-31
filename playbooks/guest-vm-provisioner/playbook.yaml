@@ -18,6 +18,11 @@
         nfs_share_allowed_ips:
           - 192.168.247.15
     - role: ../../roles/add_docker_repo
+    - role: ../../roles/docker_compose_scheduler
+      vars:
+        docker_compose_user: simon
+        docker_compose_service_name: cinemagedar-up
+        docker_compose_file: "/home/simon/docker-stuff/cinemagedar/docker-compose.yml"
     # - role: ../../roles/crypttab
     #   vars: 
     #     luks_key: ../../luks-keys/scratch
