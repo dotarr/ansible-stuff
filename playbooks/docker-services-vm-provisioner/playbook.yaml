@@ -11,7 +11,12 @@
     - role: ../../roles/install_guest_agent
     - role: ../../roles/install_docker
     - role: ../../roles/mount_nfs
-      tags: mount_nfs
+    # - role: ../../roles/crypttab
+    #   vars: 
+    #     luks_key: ../../luks-keys/scratch
+    #     mountpoint: /scratch
+    #     luks_device_id: 9e9f39a4-216e-4dbe-aae4-d2089c2e017a
+    #     mount: true
     - role: ../../roles/nfs_share
       vars:
         nfs_share_src: /scratch
@@ -24,9 +29,3 @@
         docker_compose_user: simon
         docker_compose_service_name: cinemagedar-up
         docker_compose_file: "/home/simon/docker-stuff/cinemagedarr/docker-compose.yml"
-    # - role: ../../roles/crypttab
-    #   vars: 
-    #     luks_key: ../../luks-keys/scratch
-    #     mountpoint: /scratch
-    #     luks_device_id: 9e9f39a4-216e-4dbe-aae4-d2089c2e017a
-    #     mount: true

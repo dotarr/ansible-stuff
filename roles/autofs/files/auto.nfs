@@ -1,0 +1,2 @@
+dataonnas	-fstype=nfs,rw	vmdeb-nas.teleranger.xyz:/data
+vmdeb3		-fstype=nfs,rw	vmdeb3.teleranger.xyz:/scratch
