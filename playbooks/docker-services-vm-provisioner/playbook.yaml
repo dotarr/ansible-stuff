@@ -10,6 +10,10 @@
     - role: ../../roles/install_i915_firmware
     - role: ../../roles/install_guest_agent
     - role: ../../roles/install_docker
+    - role: ../../roles/swapfile
+      vars:
+        swapfile_path: /scratch/swapfile
+        swapfile_size_mb: 4096
     - role: ../../roles/mount_nfs
     # - role: ../../roles/crypttab
     #   vars: 

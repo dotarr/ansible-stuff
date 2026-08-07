@@ -1,0 +1,43 @@
+---
+- name: Stat swapfile
+  ansible.builtin.stat:
+    path: "{{ swapfile_path }}"
+  register: swapfile_stat
+
+- name: Allocate swapfile
+  ansible.builtin.command: "fallocate -l {{ swapfile_size_mb }}M {{ swapfile_path }}"
+  when: not swapfile_stat.stat.exists
+
+- name: Set swapfile permissions
+  ansible.builtin.file:
+    path: "{{ swapfile_path }}"
+    mode: "0600"
+    owner: root
+    group: root
+
+- name: Check swapfile signature
+  ansible.builtin.command: "blkid -o value -s TYPE {{ swapfile_path }}"
+  register: swapfile_type
+  changed_when: false
+  failed_when: false
+
+- name: Format swapfile
+  ansible.builtin.command: "mkswap {{ swapfile_path }}"
+  when: swapfile_type.stdout != 'swap'
+
+- name: Add swapfile to fstab
+  ansible.posix.mount:
+    src: "{{ swapfile_path }}"
+    path: none
+    fstype: swap
+    opts: defaults
+    state: present
+
+- name: Check active swaps
+  ansible.builtin.command: "swapon --show=NAME --noheadings"
+  register: active_swaps
+  changed_when: false
+
+- name: Enable swapfile
+  ansible.builtin.command: "swapon {{ swapfile_path }}"
+  when: swapfile_path not in active_swaps.stdout_lines
