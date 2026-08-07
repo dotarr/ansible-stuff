@@ -1,5 +1,5 @@
 - name: Debian Provisioner
-  hosts: vmdeb-nas
+  hosts: nas
   become: true
   roles:
     - role: ../../roles/unattended_upgrades
@@ -8,6 +8,9 @@
           - '"origin=*";'
         unattended_upgrades_automatic_reboot: false
     - role: ../../roles/install_guest_agent
+    - role: ../../roles/swapfile
+      vars:
+        swapfile_size_mb: 4096
     - role: ../../roles/crypttab
       vars: 
         luks_key: ../../luks-keys/barra
