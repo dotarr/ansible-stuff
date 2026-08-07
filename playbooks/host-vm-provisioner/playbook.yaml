@@ -1,4 +1,4 @@
-- name: Ubuntu Provisioner
+- name: Host VM Provisioner
   hosts: proxmox
   become: true
   gather_facts: false
