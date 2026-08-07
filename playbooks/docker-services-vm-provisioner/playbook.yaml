@@ -11,6 +11,7 @@
     - role: ../../roles/install_guest_agent
     - role: ../../roles/install_docker
     - role: ../../roles/mount_nfs
+      tags: mount_nfs
     - role: ../../roles/nfs_share
       vars:
         nfs_share_src: /scratch

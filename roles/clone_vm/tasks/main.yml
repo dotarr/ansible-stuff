@@ -11,12 +11,12 @@
   ansible.builtin.command: "qm disk move {{ vmid.stdout }} scsi0 local --format qcow2 --delete"
 
 - name: Override CPU cores
-  ansible.builtin.command: "qm set {{ vmid.stdout }} -cores {{ cpu_cores }}"
-  when: cpu_cores is defined
+  ansible.builtin.command: "qm set {{ vmid.stdout }} -cores {{ clone_cpu_cores }}"
+  when: clone_cpu_cores is defined
 
 - name: Override RAM allocation
-  ansible.builtin.command: "qm set {{ vmid.stdout }} -memory {{ ram }}"
-  when: ram is defined
+  ansible.builtin.command: "qm set {{ vmid.stdout }} -memory {{ clone_ram }}"
+  when: clone_ram is defined
 
 - name: Passthrough GPU
   ansible.builtin.command: "qm set {{ vmid.stdout }} -hostpci0 {{ gpu_pci_address }},pcie=on"

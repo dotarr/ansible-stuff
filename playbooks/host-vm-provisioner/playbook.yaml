@@ -38,18 +38,16 @@
     - role: ../../roles/vm_perf_tuning
       vars:
         target_vmid: "{{ vmid.stdout }}"
-
-    # - role: ../../roles/import_omv
-    #   vars:
-    #     omv_backup_file: ../../vm-template-backups/vzdump-qemu-101-2023_05_20-14_56_21.vma.zst
-    #     omv_template_id: 9005
-    # - role: ../../roles/clone_vm
-    #   vars:
-    #     vm_name: omv
-    #     template_id: 9005
-    #     passthrough_gpu: false
-    #     passthrough_ssd_id: ata-WDC_WD80EDAZ-11TA3A0_VDKJJL9K
-
-    - role: ../../roles/vm_perf_tuning
+    - role: ../../roles/clone_vm
+      tags: nas
       vars:
-        target_vmid: 101 # omv, provisioned outside this repo (imported backup, not cloned)
+        vm_name: vmdeb-nas
+        template_id: 9003
+        passthrough_gpu: false
+        passthrough_ssd_id: ata-ST24000DM001-3Y7103_ZXA113Z5
+        clone_cpu_cores: 4
+        clone_ram: 2048
+    - role: ../../roles/vm_perf_tuning
+      tags: nas
+      vars:
+        target_vmid: "{{ vmid.stdout }}"

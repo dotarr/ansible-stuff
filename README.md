@@ -16,9 +16,9 @@ Provisions
 * Host-level provisioning of guests
     - Cloudbuntu pull of Debian vm to make a template
     - Clone of the above to make a usable guest vm passing through gpu+scratch ssd
-    - Restore blank OMV dump + passthrough of nas drive
-* Provision OMV
-    - Copy in LUKS keys, activate share
+    - Clone of the above to make a NAS guest vm passing through nas drive
+* Provision NAS guest
+    - Copy in LUKS keys, activate LVM, mount share
 * Provision Debian guest
     - Download & add i915 firmware
     - Configure gpu passthrough
