@@ -1,0 +1,31 @@
+---
+
+- name: Install autofs
+  apt:
+    pkg: autofs
+    state: present
+    update_cache: true
+
+- name: Copy /nfs automount map entry
+  ansible.builtin.copy:
+    src: nfs.autofs
+    dest: /etc/auto.master.d/nfs.autofs
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart autofs
+
+- name: Copy /nfs automount map
+  ansible.builtin.copy:
+    src: auto.nfs
+    dest: /etc/auto.nfs
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart autofs
+
+- name: Enable and start autofs
+  ansible.builtin.systemd:
+    name: autofs
+    enabled: true
+    state: started

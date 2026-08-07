@@ -10,6 +10,7 @@
         # pattern - wildcard everything instead, same fix used for dietpi.
         unattended_upgrades_origins:
           - '"origin=*";'
+    - role: ../../roles/autofs
     - role: ../../roles/flatpak_updater
     - role: ../../roles/install_pyenv
     - role: ../../roles/pyenv_default_python
