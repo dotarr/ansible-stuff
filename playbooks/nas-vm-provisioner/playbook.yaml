@@ -1,0 +1,25 @@
+- name: Debian Provisioner
+  hosts: vmdeb-nas
+  become: true
+  roles:
+    - role: ../../roles/unattended_upgrades
+      vars:
+        unattended_upgrades_origins:
+          - '"origin=*";'
+        unattended_upgrades_automatic_reboot: false
+    - role: ../../roles/install_guest_agent
+    - role: ../../roles/crypttab
+      vars: 
+        luks_key: ../../luks-keys/barra
+        mountpoint: /data
+        luks_device_id: dce9dec8-7540-442e-b362-4ceb7d308bec
+        mount: true
+        lvm_vg_name: nasvg
+        lvm_lv_name: nas_lv
+    - role: ../../roles/nfs_share
+      vars:
+        nfs_share_src: /data
+        nfs_share_export: /export/data
+        nfs_share_allowed_ips:
+          - 192.168.247.15
+          - 192.168.247.38

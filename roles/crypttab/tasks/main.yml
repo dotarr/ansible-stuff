@@ -8,6 +8,12 @@
     state: present
     update_cache: true
 
+- name: Install LVM tools
+  apt:
+    pkg: lvm2
+    state: present
+  when: lvm_vg_name is defined
+
 - name: Copy keyfile
   ansible.builtin.copy:
     src: "{{ luks_key }}"
@@ -29,8 +35,14 @@
   args:
     creates: "/dev/mapper/{{ luks_key | basename }}"
 
+- name: Activate LVM volume group
+  ansible.builtin.command: "vgchange -ay {{ lvm_vg_name }}"
+  register: vgchange_result
+  changed_when: "'now active' in vgchange_result.stdout"
+  when: lvm_vg_name is defined and mount
+
 - name: Mount
-  block: 
+  block:
     - name: Stat mountpoint
       stat:
         path: "{{ mountpoint }}"
@@ -47,7 +59,7 @@
 
     - name: Mount luks
       ansible.posix.mount:
-        src: "/dev/mapper/{{ luks_key | basename }}"
+        src: "{{ '/dev/' + lvm_vg_name + '/' + lvm_lv_name if lvm_vg_name is defined else '/dev/mapper/' + (luks_key | basename) }}"
         path: "{{ mountpoint }}"
         opts: "defaults,nofail"
         fstype: ext4
