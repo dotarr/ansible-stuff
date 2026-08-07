@@ -1,4 +1,4 @@
-- name: Debian Provisioner
+- name: NAS VM Provisioner
   hosts: nas
   become: true
   roles:

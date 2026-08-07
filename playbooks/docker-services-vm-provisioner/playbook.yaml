@@ -1,4 +1,4 @@
-- name: Debian Provisioner
+- name: Docker Services VM Provisioner
   hosts: debian_guest
   become: true
   roles:

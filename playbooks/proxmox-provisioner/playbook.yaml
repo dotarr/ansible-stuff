@@ -1,4 +1,4 @@
-- name: Dropbear + Proxmox
+- name: Proxmox Provisioner
   hosts: proxmox 
   become: true
   roles:
