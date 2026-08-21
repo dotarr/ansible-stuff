@@ -1,0 +1,29 @@
+{{ docker_sync_function_name }}() {
+  local repo="{{ docker_sync_repo_dir }}"
+
+  # Snapshot which compose project dirs are actually running before
+  # touching anything, so we restart only those, not every stack in the repo.
+  local running_dirs
+  running_dirs="$(
+    for id in $(docker ps -q); do
+      docker inspect --format {% raw %}'{{ index .Config.Labels "com.docker.compose.project.working_dir" }}'{% endraw %} "$id" 2>/dev/null
+    done | sort -u
+  )"
+
+  echo "[{{ docker_sync_function_name }}] stopping running containers..."
+  docker ps -q | xargs -r docker stop
+
+  echo "[{{ docker_sync_function_name }}] pulling $repo ({{ docker_sync_branch }})..."
+  git -C "$repo" pull --ff-only origin {{ docker_sync_branch }} || {
+    echo "[{{ docker_sync_function_name }}] git pull failed, aborting" >&2
+    return 1
+  }
+
+  echo "[{{ docker_sync_function_name }}] starting previously running services..."
+  while IFS= read -r dir; do
+    [ -n "$dir" ] || continue
+    ( cd "$dir" && docker compose up -d )
+  done <<< "$running_dirs"
+
+  echo "[{{ docker_sync_function_name }}] done."
+}

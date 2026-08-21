@@ -1,0 +1,6 @@
+---
+
+docker_sync_user: "{{ ansible_user }}"
+docker_sync_function_name: docker-sync
+docker_sync_repo_dir: "/home/{{ docker_sync_user }}/docker-stuff"
+docker_sync_branch: main

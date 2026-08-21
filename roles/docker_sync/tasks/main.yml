@@ -1,0 +1,14 @@
+---
+
+- name: Look up docker_sync_user's home dir
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ docker_sync_user }}"
+
+- name: Add docker-sync function to user's bashrc
+  become: "{{ docker_sync_user != ansible_facts.user_id }}"
+  become_user: "{{ docker_sync_user }}"
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_facts.getent_passwd[docker_sync_user][4] }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - docker-sync"
+    block: "{{ lookup('ansible.builtin.template', 'docker-sync-function.sh.j2') }}"
