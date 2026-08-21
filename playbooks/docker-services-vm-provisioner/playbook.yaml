@@ -33,3 +33,7 @@
         docker_compose_user: simon
         docker_compose_service_name: cinemagedar-up
         docker_compose_file: "/home/simon/docker-stuff/cinemagedarr/docker-compose.yml"
+    - role: ../../roles/docker_sync
+      vars:
+        docker_sync_user: simon
+        docker_sync_repo_dir: "/home/simon/docker-stuff"
