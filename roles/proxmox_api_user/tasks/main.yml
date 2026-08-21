@@ -1,0 +1,62 @@
+---
+
+# Dedicated read-only Proxmox principal for API-consuming dashboards
+# (homepage's Proxmox widget) instead of a token under root@pam. privsep
+# is on by default for new tokens either way — even root's own tokens
+# get zero permissions until granted an ACL explicitly — so a dedicated
+# user costs nothing extra beyond this role existing, and keeps the
+# credential's blast radius scoped to PVEAuditor, not root's identity.
+
+- name: Look up existing Proxmox users
+  ansible.builtin.command: pveum user list --output-format json
+  register: proxmox_existing_users
+  changed_when: false
+
+- name: "Create {{ proxmox_api_user_name }}@{{ proxmox_api_user_realm }}"
+  ansible.builtin.command: >
+    pveum user add {{ proxmox_api_user_name }}@{{ proxmox_api_user_realm }}
+    --comment "{{ proxmox_api_user_comment }}"
+  when: >
+    (proxmox_existing_users.stdout | from_json
+      | selectattr('userid', 'equalto', proxmox_api_user_name + '@' + proxmox_api_user_realm)
+      | list | length) == 0
+
+- name: "Grant {{ proxmox_api_user_role }} to the user on /"
+  # pveum acl modify is idempotent by design (keyed on path+type+ugid+role) —
+  # unlike user/token add, safe to just always run.
+  ansible.builtin.command: >
+    pveum acl modify / --users {{ proxmox_api_user_name }}@{{ proxmox_api_user_realm }}
+    --roles {{ proxmox_api_user_role }}
+  changed_when: true
+
+- name: "Look up existing tokens for {{ proxmox_api_user_name }}@{{ proxmox_api_user_realm }}"
+  ansible.builtin.command: >
+    pveum user token list {{ proxmox_api_user_name }}@{{ proxmox_api_user_realm }} --output-format json
+  register: proxmox_existing_tokens
+  changed_when: false
+
+- name: "Create API token {{ proxmox_api_token_name }}"
+  # no_log — the only place Proxmox ever shows this secret is in this
+  # command's own output, right below.
+  ansible.builtin.command: >
+    pveum user token add {{ proxmox_api_user_name }}@{{ proxmox_api_user_realm }} {{ proxmox_api_token_name }}
+    --privsep 1 --output-format json
+  register: proxmox_token_create
+  no_log: true
+  when: >
+    (proxmox_existing_tokens.stdout | from_json
+      | selectattr('tokenid', 'equalto', proxmox_api_token_name)
+      | list | length) == 0
+
+- name: Show the new token's secret (Proxmox never displays it again)
+  ansible.builtin.debug:
+    msg: >-
+      TOKEN_ID={{ proxmox_api_user_name }}@{{ proxmox_api_user_realm }}!{{ proxmox_api_token_name }}
+      TOKEN_SECRET={{ (proxmox_token_create.stdout | from_json).value }}
+  when: proxmox_token_create is changed
+
+- name: "Grant {{ proxmox_api_user_role }} to the token on /"
+  ansible.builtin.command: >
+    pveum acl modify / --tokens '{{ proxmox_api_user_name }}@{{ proxmox_api_user_realm }}!{{ proxmox_api_token_name }}'
+    --roles {{ proxmox_api_user_role }}
+  changed_when: true

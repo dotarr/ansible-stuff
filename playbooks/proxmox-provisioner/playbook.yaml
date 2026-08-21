@@ -15,3 +15,4 @@
         pve_remove_subscription_warning: true
     - role: ../../roles/setup_network_bridge
     - role: ../../roles/host_gpu_passthrough
+    - role: ../../roles/proxmox_api_user

@@ -1,0 +1,7 @@
+---
+
+proxmox_api_user_name: homepage
+proxmox_api_user_realm: pve
+proxmox_api_user_role: PVEAuditor
+proxmox_api_token_name: homepage
+proxmox_api_user_comment: "Read-only API user for dashboard widgets (see docker-stuff/homepage)"
